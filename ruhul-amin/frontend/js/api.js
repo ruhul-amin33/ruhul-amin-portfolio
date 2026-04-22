@@ -2,7 +2,7 @@
 
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:5000/api'
-  : 'https://ruhul-amin-portfolio.onrender.com'; // ← Render deploy এর পরে এটি update করুন
+  : 'https://ruhul-amin-portfolio.onrender.com/api';
 
 window.API_BASE = API_BASE;
 
