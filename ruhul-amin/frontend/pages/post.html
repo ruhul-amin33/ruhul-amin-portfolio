@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post — Ruhul Amin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:'Inter',sans-serif}
+    .prose p{margin-bottom:1.25rem;color:#374151;line-height:1.8}
+    .prose h2{font-size:1.5rem;font-weight:700;margin:2rem 0 1rem;color:#111827}
+    .prose h3{font-size:1.25rem;font-weight:600;margin:1.5rem 0 0.75rem;color:#1f2937}
+    .prose ul,.prose ol{margin:1rem 0 1.5rem 1.5rem}
+    .prose li{margin-bottom:.5rem;color:#374151}
+    .prose code{background:#f3f4f6;padding:.2rem .4rem;border-radius:.25rem;font-size:.875rem}
+    .prose pre{background:#1f2937;color:#e5e7eb;padding:1.25rem;border-radius:.75rem;overflow-x:auto;margin:1.5rem 0}
+  </style>
+</head>
+<body class="bg-gray-50">
+  <nav class="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
+    <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="../index.html" class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">RA</div>
+        <span class="font-bold text-gray-900">Ruhul Amin</span>
+      </a>
+      <a href="../index.html#blog" class="text-gray-600 hover:text-blue-600 text-sm font-medium">← All Posts</a>
+    </div>
+  </nav>
+  <div class="max-w-3xl mx-auto px-4 py-12">
+    <div id="postContent">
+      <div class="text-center text-gray-400 py-20">Loading post...</div>
+    </div>
+  </div>
+<script src="../js/api.js"></script>
+<script>
+const slug = new URLSearchParams(location.search).get('slug');
+if (!slug) { location.href = '../index.html'; }
+apiGet('/posts/' + slug).then(({data}) => {
+  document.title = data.title + ' — Ruhul Amin';
+  document.getElementById('postContent').innerHTML = `
+    ${data.thumbnail ? `<img src="${data.thumbnail}" alt="${data.title}" class="w-full h-64 object-cover rounded-2xl mb-8">` : ''}
+    ${data.tags ? `<div class="flex flex-wrap gap-2 mb-4">${data.tags.split(',').map(t=>`<span class="bg-blue-50 text-blue-700 text-xs px-3 py-1 rounded-full">${t.trim()}</span>`).join('')}</div>` : ''}
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-4">${data.title}</h1>
+    <div class="text-gray-400 text-sm mb-8 pb-8 border-b border-gray-200">${new Date(data.created_at).toLocaleDateString('en-BD', {year:'numeric',month:'long',day:'numeric'})}</div>
+    <div class="prose">${data.content.replace(/\n/g, '<br>')}</div>
+  `;
+}).catch(() => {
+  document.getElementById('postContent').innerHTML = '<div class="text-center text-red-400 py-20">Post not found.</div>';
+});
+</script>
+</body>
+</html>

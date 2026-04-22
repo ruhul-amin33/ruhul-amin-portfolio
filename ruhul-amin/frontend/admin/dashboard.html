@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Ruhul Amin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:'Inter',sans-serif}
+    .sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;color:#94a3b8;font-size:14px;font-weight:500;transition:all .2s;cursor:pointer;}
+    .sidebar-link:hover,.sidebar-link.active{background:#1e40af;color:#fff;}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+  </style>
+</head>
+<body class="bg-slate-950 min-h-screen flex">
+
+<!-- SIDEBAR -->
+<aside class="w-60 bg-slate-900 border-r border-slate-800 flex flex-col min-h-screen fixed top-0 left-0 z-30">
+  <div class="p-5 border-b border-slate-800">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-lg text-white font-bold text-sm flex items-center justify-center">RA</div>
+      <div>
+        <div class="text-white font-semibold text-sm">Admin Panel</div>
+        <div class="text-slate-500 text-xs" id="adminEmail">...</div>
+      </div>
+    </div>
+  </div>
+  <nav class="p-3 space-y-1 flex-1">
+    <div class="sidebar-link active" onclick="showTab('dashboard')">📊 Dashboard</div>
+    <div class="sidebar-link" onclick="showTab('posts')">📝 Posts</div>
+    <div class="sidebar-link" onclick="showTab('skills')">⚡ Skills</div>
+    <div class="sidebar-link" onclick="showTab('portfolio')">🗂️ Portfolio</div>
+    <div class="sidebar-link" onclick="showTab('profile')">👤 Profile</div>
+    <div class="sidebar-link" onclick="showTab('contacts')">💬 Messages</div>
+    <div class="sidebar-link" onclick="showTab('education')">🎓 Education</div>
+    <div class="sidebar-link" onclick="showTab('services')">🔧 Services</div>
+  </nav>
+  <div class="p-3 border-t border-slate-800 space-y-1">
+    <a href="../index.html" class="sidebar-link">🌐 View Site</a>
+    <div class="sidebar-link text-red-400 hover:!bg-red-900/30 hover:!text-red-400" onclick="logout()">🚪 Logout</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="ml-60 flex-1 p-8 min-h-screen">
+
+  <!-- DASHBOARD -->
+  <div id="tab-dashboard" class="tab-content active">
+    <h1 class="text-2xl font-bold text-white mb-6">Dashboard</h1>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+        <div class="text-slate-400 text-sm mb-1">Posts</div>
+        <div class="text-3xl font-bold text-white" id="statPosts">—</div>
+      </div>
+      <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+        <div class="text-slate-400 text-sm mb-1">Projects</div>
+        <div class="text-3xl font-bold text-white" id="statPort">—</div>
+      </div>
+      <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+        <div class="text-slate-400 text-sm mb-1">Skills</div>
+        <div class="text-3xl font-bold text-white" id="statSkills">—</div>
+      </div>
+      <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 cursor-pointer hover:border-blue-500" onclick="showTab('contacts')">
+        <div class="text-slate-400 text-sm mb-1">Messages</div>
+        <div class="text-3xl font-bold text-emerald-400" id="statContacts">—</div>
+      </div>
+    </div>
+    <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+      <h2 class="text-white font-semibold mb-4">Quick Actions</h2>
+      <div class="flex flex-wrap gap-3">
+        <button onclick="showTab('posts'); openPostForm()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium">+ New Post</button>
+        <button onclick="showTab('portfolio')" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Add Project</button>
+        <button onclick="showTab('skills')" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Add Skill</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POSTS -->
+  <div id="tab-posts" class="tab-content">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-white">Blog Posts</h1>
+      <button onclick="openPostForm()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium">+ New Post</button>
+    </div>
+    <div id="postsTable" class="space-y-3"></div>
+
+    <!-- Post Form Modal -->
+    <div id="postModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-start justify-center pt-16 px-4">
+      <div class="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-white font-bold text-lg" id="postModalTitle">New Post</h2>
+          <button onclick="closeModal('postModal')" class="text-slate-400 hover:text-white text-xl">✕</button>
+        </div>
+        <form id="postForm" class="space-y-4">
+          <input type="hidden" id="postId">
+          <div><label class="text-slate-400 text-sm block mb-1">Title *</label>
+            <input id="postTitle" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm" required></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Content *</label>
+            <textarea id="postContent" rows="8" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm" required></textarea></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Excerpt</label>
+            <input id="postExcerpt" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Thumbnail URL</label>
+            <input id="postThumb" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Tags (comma separated)</label>
+            <input id="postTags" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Status</label>
+            <select id="postStatus" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm">
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select></div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl">Save Post</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SKILLS -->
+  <div id="tab-skills" class="tab-content">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-white">Skills</h1>
+      <button onclick="openSkillForm()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Add Skill</button>
+    </div>
+    <div id="skillsTable" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <!-- Skill Modal -->
+    <div id="skillModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+      <div class="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-white font-bold text-lg" id="skillModalTitle">Add Skill</h2>
+          <button onclick="closeModal('skillModal')" class="text-slate-400 hover:text-white text-xl">✕</button>
+        </div>
+        <form id="skillForm" class="space-y-4">
+          <input type="hidden" id="skillId">
+          <div><label class="text-slate-400 text-sm block mb-1">Skill Name *</label>
+            <input id="skillName" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm" required></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Category</label>
+            <input id="skillCat" placeholder="e.g. Frontend, EEE" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Level (0-100)</label>
+            <input id="skillLevel" type="number" min="0" max="100" value="80" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- PORTFOLIO -->
+  <div id="tab-portfolio" class="tab-content">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-white">Portfolio</h1>
+      <button onclick="openPortForm()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Add Project</button>
+    </div>
+    <div id="portTable" class="space-y-3"></div>
+    <!-- Portfolio Modal -->
+    <div id="portModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-start justify-center pt-10 px-4">
+      <div class="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-white font-bold text-lg">Project Details</h2>
+          <button onclick="closeModal('portModal')" class="text-slate-400 hover:text-white text-xl">✕</button>
+        </div>
+        <form id="portForm" class="space-y-4">
+          <input type="hidden" id="portId">
+          <div><label class="text-slate-400 text-sm block mb-1">Title *</label>
+            <input id="portTitle" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm" required></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Description</label>
+            <textarea id="portDesc" rows="3" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></textarea></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Thumbnail URL</label>
+            <input id="portThumb" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-slate-400 text-sm block mb-1">Live URL</label>
+              <input id="portLive" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+            <div><label class="text-slate-400 text-sm block mb-1">GitHub URL</label>
+              <input id="portGithub" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          </div>
+          <div><label class="text-slate-400 text-sm block mb-1">Tech Stack (comma separated)</label>
+            <input id="portTech" placeholder="React, Node.js, MySQL" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Category</label>
+            <input id="portCat" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl">Save Project</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="tab-profile" class="tab-content">
+    <h1 class="text-2xl font-bold text-white mb-6">Profile Settings</h1>
+    <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 max-w-2xl">
+      <form id="profileForm" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div><label class="text-slate-400 text-sm block mb-1">Full Name</label>
+            <input id="pName" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Title / Role</label>
+            <input id="pTitle" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+        </div>
+        <div><label class="text-slate-400 text-sm block mb-1">Bio</label>
+          <textarea id="pBio" rows="4" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></textarea></div>
+        <div class="grid grid-cols-2 gap-4">
+          <div><label class="text-slate-400 text-sm block mb-1">Email</label>
+            <input id="pEmail" type="email" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Phone</label>
+            <input id="pPhone" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+        </div>
+        <div><label class="text-slate-400 text-sm block mb-1">Location</label>
+          <input id="pLocation" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+        <div><label class="text-slate-400 text-sm block mb-1">GitHub URL</label>
+          <input id="pGithub" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+        <div><label class="text-slate-400 text-sm block mb-1">LinkedIn URL</label>
+          <input id="pLinkedin" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+        <div><label class="text-slate-400 text-sm block mb-1">Resume URL</label>
+          <input id="pResume" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+        <div><label class="text-slate-400 text-sm block mb-1">Avatar URL</label>
+          <input id="pAvatar" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl">Save Profile</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CONTACTS -->
+  <div id="tab-contacts" class="tab-content">
+    <h1 class="text-2xl font-bold text-white mb-6">Contact Messages</h1>
+    <div id="contactsList" class="space-y-3"></div>
+  </div>
+
+  <!-- EDUCATION -->
+  <div id="tab-education" class="tab-content">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-white">Education</h1>
+      <button onclick="openEduForm()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Add</button>
+    </div>
+    <div id="eduList" class="space-y-3"></div>
+    <div id="eduModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+      <div class="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-md p-6">
+        <div class="flex justify-between mb-5">
+          <h2 class="text-white font-bold">Education</h2>
+          <button onclick="closeModal('eduModal')" class="text-slate-400 hover:text-white">✕</button>
+        </div>
+        <form id="eduForm" class="space-y-4">
+          <input type="hidden" id="eduId">
+          <div><label class="text-slate-400 text-sm block mb-1">Degree *</label>
+            <input id="eduDegree" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm" required></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Institution *</label>
+            <input id="eduInst" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm" required></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Field of Study</label>
+            <input id="eduField" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-slate-400 text-sm block mb-1">Start Year</label>
+              <input id="eduStart" type="number" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+            <div><label class="text-slate-400 text-sm block mb-1">End Year</label>
+              <input id="eduEnd" type="number" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          </div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <div id="tab-services" class="tab-content">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-white">Services</h1>
+      <button onclick="openSvcForm()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-sm font-medium">+ Add</button>
+    </div>
+    <div id="svcList" class="grid sm:grid-cols-2 gap-4"></div>
+    <div id="svcModal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4">
+      <div class="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-md p-6">
+        <div class="flex justify-between mb-5">
+          <h2 class="text-white font-bold">Service</h2>
+          <button onclick="closeModal('svcModal')" class="text-slate-400 hover:text-white">✕</button>
+        </div>
+        <form id="svcForm" class="space-y-4">
+          <input type="hidden" id="svcId">
+          <div><label class="text-slate-400 text-sm block mb-1">Title *</label>
+            <input id="svcTitle" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm" required></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Description</label>
+            <textarea id="svcDesc" rows="3" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></textarea></div>
+          <div><label class="text-slate-400 text-sm block mb-1">Icon (emoji)</label>
+            <input id="svcIcon" placeholder="💻" class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-2.5 text-sm"></div>
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl">Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="../js/api.js"></script>
+<script>
+// Auth guard
+async function init() {
+  try {
+    const { user } = await apiGet('/auth/me', true);
+    document.getElementById('adminEmail').textContent = user.email;
+    loadDashboard(); loadPosts(); loadSkills(); loadPortfolio(); loadContacts(); loadProfile(); loadEducation(); loadServices();
+  } catch { location.href = 'login.html'; }
+}
+
+function logout() { token.remove(); location.href = 'login.html'; }
+
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function openModal(id)  { document.getElementById(id).classList.remove('hidden'); }
+
+async function loadDashboard() {
+  try {
+    const [posts, port, skills, contacts] = await Promise.all([
+      apiGet('/posts/all', true), apiGet('/portfolio'), apiGet('/skills'), apiGet('/contact', true)
+    ]);
+    document.getElementById('statPosts').textContent    = posts.data.length;
+    document.getElementById('statPort').textContent     = port.data.length;
+    document.getElementById('statSkills').textContent   = skills.data.length;
+    document.getElementById('statContacts').textContent = contacts.data.length;
+  } catch(e){}
+}
+
+// ========= POSTS =========
+let posts = [];
+async function loadPosts() {
+  try {
+    const { data } = await apiGet('/posts/all', true);
+    posts = data;
+    document.getElementById('postsTable').innerHTML = data.map(p => `
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between">
+        <div>
+          <span class="text-xs px-2 py-0.5 rounded-full mr-2 ${p.status === 'published' ? 'bg-emerald-900 text-emerald-400' : 'bg-yellow-900 text-yellow-400'}">${p.status}</span>
+          <span class="text-white font-medium text-sm">${p.title}</span>
+          <div class="text-slate-500 text-xs mt-1">${new Date(p.created_at).toLocaleDateString()}</div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="editPost(${p.id})" class="text-slate-400 hover:text-blue-400 text-sm px-3 py-1.5 bg-slate-700 rounded-lg">Edit</button>
+          <button onclick="deletePost(${p.id})" class="text-slate-400 hover:text-red-400 text-sm px-3 py-1.5 bg-slate-700 rounded-lg">Del</button>
+        </div>
+      </div>
+    `).join('') || '<div class="text-slate-500 text-center py-8">No posts yet.</div>';
+  } catch(e){}
+}
+function openPostForm()  { document.getElementById('postId').value=''; document.getElementById('postForm').reset(); document.getElementById('postModalTitle').textContent='New Post'; openModal('postModal'); }
+function editPost(id)    { const p = posts.find(x=>x.id===id); document.getElementById('postId').value=id; document.getElementById('postTitle').value=p.title; document.getElementById('postContent').value=p.content; document.getElementById('postExcerpt').value=p.excerpt||''; document.getElementById('postThumb').value=p.thumbnail||''; document.getElementById('postTags').value=p.tags||''; document.getElementById('postStatus').value=p.status; document.getElementById('postModalTitle').textContent='Edit Post'; openModal('postModal'); }
+async function deletePost(id) { if(!confirm('Delete?')) return; try { await apiDelete('/posts/'+id, true); toast('Deleted'); loadPosts(); } catch(e){ toast(e.message,'error'); } }
+document.getElementById('postForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = document.getElementById('postId').value;
+  const body = { title:document.getElementById('postTitle').value, content:document.getElementById('postContent').value, excerpt:document.getElementById('postExcerpt').value, thumbnail:document.getElementById('postThumb').value, tags:document.getElementById('postTags').value, status:document.getElementById('postStatus').value };
+  try { id ? await apiPut('/posts/'+id, body, true) : await apiPost('/posts', body, true); toast('Post saved!'); closeModal('postModal'); loadPosts(); } catch(e){ toast(e.message,'error'); }
+});
+
+// ========= SKILLS =========
+let skills = [];
+async function loadSkills() {
+  try {
+    const { data } = await apiGet('/skills');
+    skills = data;
+    document.getElementById('skillsTable').innerHTML = data.map(s => `
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
+        <div class="flex justify-between items-start mb-2">
+          <div><div class="text-white font-medium text-sm">${s.name}</div><div class="text-slate-500 text-xs">${s.category||''}</div></div>
+          <div class="flex gap-1"><button onclick="editSkill(${s.id})" class="text-slate-400 hover:text-blue-400 text-xs px-2 py-1 bg-slate-700 rounded">Edit</button><button onclick="deleteSkill(${s.id})" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1 bg-slate-700 rounded">Del</button></div>
+        </div>
+        <div class="bg-slate-700 rounded-full h-1.5 mt-2"><div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500" style="width:${s.level}%"></div></div>
+        <div class="text-right text-xs text-slate-500 mt-1">${s.level}%</div>
+      </div>
+    `).join('') || '<div class="text-slate-500 col-span-3 text-center py-8">No skills yet.</div>';
+  } catch(e){}
+}
+function openSkillForm() { document.getElementById('skillId').value=''; document.getElementById('skillForm').reset(); document.getElementById('skillLevel').value=80; document.getElementById('skillModalTitle').textContent='Add Skill'; openModal('skillModal'); }
+function editSkill(id)   { const s=skills.find(x=>x.id===id); document.getElementById('skillId').value=id; document.getElementById('skillName').value=s.name; document.getElementById('skillCat').value=s.category||''; document.getElementById('skillLevel').value=s.level; document.getElementById('skillModalTitle').textContent='Edit Skill'; openModal('skillModal'); }
+async function deleteSkill(id){ if(!confirm('Delete?')) return; try{ await apiDelete('/skills/'+id,true); toast('Deleted'); loadSkills(); }catch(e){toast(e.message,'error');} }
+document.getElementById('skillForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id=document.getElementById('skillId').value;
+  const body={name:document.getElementById('skillName').value,category:document.getElementById('skillCat').value,level:document.getElementById('skillLevel').value};
+  try{ id?await apiPut('/skills/'+id,body,true):await apiPost('/skills',body,true); toast('Saved!'); closeModal('skillModal'); loadSkills(); }catch(e){toast(e.message,'error');}
+});
+
+// ========= PORTFOLIO =========
+let port = [];
+async function loadPortfolio(){
+  try{
+    const {data}=await apiGet('/portfolio');
+    port=data;
+    document.getElementById('portTable').innerHTML = data.map(p=>`
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between">
+        <div><div class="text-white font-medium text-sm">${p.title}</div><div class="text-slate-500 text-xs mt-1">${p.category||''} ${p.tech_stack?'• '+p.tech_stack:''}</div></div>
+        <div class="flex gap-2"><button onclick="editPort(${p.id})" class="text-slate-400 hover:text-blue-400 text-sm px-3 py-1.5 bg-slate-700 rounded-lg">Edit</button><button onclick="deletePort(${p.id})" class="text-slate-400 hover:text-red-400 text-sm px-3 py-1.5 bg-slate-700 rounded-lg">Del</button></div>
+      </div>
+    `).join('')||'<div class="text-slate-500 text-center py-8">No projects yet.</div>';
+  }catch(e){}
+}
+function openPortForm(){document.getElementById('portId').value='';document.getElementById('portForm').reset();openModal('portModal');}
+function editPort(id){const p=port.find(x=>x.id===id);document.getElementById('portId').value=id;document.getElementById('portTitle').value=p.title;document.getElementById('portDesc').value=p.description||'';document.getElementById('portThumb').value=p.thumbnail||'';document.getElementById('portLive').value=p.live_url||'';document.getElementById('portGithub').value=p.github_url||'';document.getElementById('portTech').value=p.tech_stack||'';document.getElementById('portCat').value=p.category||'';openModal('portModal');}
+async function deletePort(id){if(!confirm('Delete?'))return;try{await apiDelete('/portfolio/'+id,true);toast('Deleted');loadPortfolio();}catch(e){toast(e.message,'error');}}
+document.getElementById('portForm').addEventListener('submit',async e=>{
+  e.preventDefault();const id=document.getElementById('portId').value;
+  const body={title:document.getElementById('portTitle').value,description:document.getElementById('portDesc').value,thumbnail:document.getElementById('portThumb').value,live_url:document.getElementById('portLive').value,github_url:document.getElementById('portGithub').value,tech_stack:document.getElementById('portTech').value,category:document.getElementById('portCat').value};
+  try{id?await apiPut('/portfolio/'+id,body,true):await apiPost('/portfolio',body,true);toast('Saved!');closeModal('portModal');loadPortfolio();}catch(e){toast(e.message,'error');}
+});
+
+// ========= CONTACTS =========
+async function loadContacts(){
+  try{
+    const {data}=await apiGet('/contact',true);
+    document.getElementById('contactsList').innerHTML=data.map(c=>`
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 ${c.is_read?'':'border-l-4 border-l-blue-500'}">
+        <div class="flex justify-between items-start mb-2">
+          <div><span class="text-white font-medium">${c.name}</span> <span class="text-slate-500 text-sm">&lt;${c.email}&gt;</span></div>
+          <div class="flex gap-2">
+            ${!c.is_read?`<button onclick="markRead(${c.id})" class="text-xs text-slate-400 hover:text-emerald-400 px-2 py-1 bg-slate-700 rounded">Mark Read</button>`:''}
+            <button onclick="deleteContact(${c.id})" class="text-xs text-slate-400 hover:text-red-400 px-2 py-1 bg-slate-700 rounded">Delete</button>
+          </div>
+        </div>
+        ${c.subject?`<div class="text-slate-400 text-sm font-medium mb-1">${c.subject}</div>`:''}
+        <p class="text-slate-300 text-sm">${c.message}</p>
+        <div class="text-slate-600 text-xs mt-2">${new Date(c.created_at).toLocaleString()}</div>
+      </div>
+    `).join('')||'<div class="text-slate-500 text-center py-8">No messages yet.</div>';
+  }catch(e){}
+}
+async function markRead(id){try{await apiPut('/contact/'+id+'/read',{},true);loadContacts();}catch(e){}}
+async function deleteContact(id){if(!confirm('Delete?'))return;try{await apiDelete('/contact/'+id,true);loadContacts();}catch(e){}}
+
+// ========= PROFILE =========
+async function loadProfile(){
+  try{
+    const {data}=await apiGet('/profile');
+    const p=data.profile;
+    if(p){document.getElementById('pName').value=p.full_name||'';document.getElementById('pTitle').value=p.title||'';document.getElementById('pBio').value=p.bio||'';document.getElementById('pEmail').value=p.email||'';document.getElementById('pPhone').value=p.phone||'';document.getElementById('pLocation').value=p.location||'';document.getElementById('pGithub').value=p.github_url||'';document.getElementById('pLinkedin').value=p.linkedin_url||'';document.getElementById('pResume').value=p.resume_url||'';document.getElementById('pAvatar').value=p.avatar||'';}
+  }catch(e){}
+}
+document.getElementById('profileForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  try{await apiPut('/profile',{full_name:document.getElementById('pName').value,title:document.getElementById('pTitle').value,bio:document.getElementById('pBio').value,email:document.getElementById('pEmail').value,phone:document.getElementById('pPhone').value,location:document.getElementById('pLocation').value,github_url:document.getElementById('pGithub').value,linkedin_url:document.getElementById('pLinkedin').value,resume_url:document.getElementById('pResume').value,avatar:document.getElementById('pAvatar').value},true);toast('Profile saved!');}catch(e){toast(e.message,'error');}
+});
+
+// ========= EDUCATION =========
+let edus=[];
+async function loadEducation(){
+  try{const {data}=await apiGet('/profile');edus=data.education||[];document.getElementById('eduList').innerHTML=edus.map(e=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex justify-between items-center"><div><div class="text-white font-medium text-sm">${e.degree}</div><div class="text-slate-500 text-xs">${e.institution} • ${e.start_year||''}–${e.end_year||'Present'}</div></div><div class="flex gap-2"><button onclick="editEdu(${e.id})" class="text-slate-400 hover:text-blue-400 text-sm px-3 py-1.5 bg-slate-700 rounded-lg">Edit</button><button onclick="deleteEdu(${e.id})" class="text-slate-400 hover:text-red-400 text-sm px-3 py-1.5 bg-slate-700 rounded-lg">Del</button></div></div>`).join('')||'<div class="text-slate-500 text-center py-8">No education entries.</div>';}catch(e){}
+}
+function openEduForm(){document.getElementById('eduId').value='';document.getElementById('eduForm').reset();openModal('eduModal');}
+function editEdu(id){const e=edus.find(x=>x.id===id);document.getElementById('eduId').value=id;document.getElementById('eduDegree').value=e.degree;document.getElementById('eduInst').value=e.institution;document.getElementById('eduField').value=e.field_of_study||'';document.getElementById('eduStart').value=e.start_year||'';document.getElementById('eduEnd').value=e.end_year||'';openModal('eduModal');}
+async function deleteEdu(id){if(!confirm('Delete?'))return;try{await apiDelete('/profile/education/'+id,true);toast('Deleted');loadEducation();}catch(e){toast(e.message,'error');}}
+document.getElementById('eduForm').addEventListener('submit',async e=>{e.preventDefault();const id=document.getElementById('eduId').value;const body={degree:document.getElementById('eduDegree').value,institution:document.getElementById('eduInst').value,field_of_study:document.getElementById('eduField').value,start_year:document.getElementById('eduStart').value,end_year:document.getElementById('eduEnd').value};try{id?await apiPut('/profile/education/'+id,body,true):await apiPost('/profile/education',body,true);toast('Saved!');closeModal('eduModal');loadEducation();}catch(e){toast(e.message,'error');}});
+
+// ========= SERVICES =========
+let svcs=[];
+async function loadServices(){try{const {data}=await apiGet('/profile');svcs=data.services||[];document.getElementById('svcList').innerHTML=svcs.map(s=>`<div class="bg-slate-800 border border-slate-700 rounded-xl p-4"><div class="flex justify-between mb-2"><div class="text-2xl">${s.icon||'🔧'}</div><div class="flex gap-1"><button onclick="editSvc(${s.id})" class="text-slate-400 hover:text-blue-400 text-xs px-2 py-1 bg-slate-700 rounded">Edit</button><button onclick="deleteSvc(${s.id})" class="text-slate-400 hover:text-red-400 text-xs px-2 py-1 bg-slate-700 rounded">Del</button></div></div><div class="text-white font-medium text-sm">${s.title}</div><div class="text-slate-500 text-xs mt-1">${s.description||''}</div></div>`).join('')||'<div class="text-slate-500 col-span-2 text-center py-8">No services yet.</div>';}catch(e){}}
+function openSvcForm(){document.getElementById('svcId').value='';document.getElementById('svcForm').reset();openModal('svcModal');}
+function editSvc(id){const s=svcs.find(x=>x.id===id);document.getElementById('svcId').value=id;document.getElementById('svcTitle').value=s.title;document.getElementById('svcDesc').value=s.description||'';document.getElementById('svcIcon').value=s.icon||'';openModal('svcModal');}
+async function deleteSvc(id){if(!confirm('Delete?'))return;try{await apiDelete('/profile/services/'+id,true);toast('Deleted');loadServices();}catch(e){toast(e.message,'error');}}
+document.getElementById('svcForm').addEventListener('submit',async e=>{e.preventDefault();const id=document.getElementById('svcId').value;const body={title:document.getElementById('svcTitle').value,description:document.getElementById('svcDesc').value,icon:document.getElementById('svcIcon').value};try{id?await apiPut('/profile/services/'+id,body,true):await apiPost('/profile/services',body,true);toast('Saved!');closeModal('svcModal');loadServices();}catch(e){toast(e.message,'error');}});
+
+init();
+</script>
+</body>
+</html>
