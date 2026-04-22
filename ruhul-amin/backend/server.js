@@ -17,6 +17,7 @@ const limiter = rateLimit({
   max: 200,
   message: { success: false, message: 'Too many requests.' }
 });
+app.set('trust proxy', 1);
 app.use('/api/', limiter);
 
 app.use(express.json({ limit: '10mb' }));
