@@ -9,20 +9,18 @@
   <style>body{font-family:'Inter',sans-serif}</style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
-
 <div class="w-full max-w-md">
   <div class="text-center mb-8">
     <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">RA</div>
     <h1 class="text-2xl font-bold text-white">Admin Panel</h1>
     <p class="text-slate-400 text-sm mt-1">Sign in to manage your portfolio</p>
   </div>
-
   <div class="bg-white/10 backdrop-blur-sm border border-white/20 rounded-3xl p-8">
     <form id="loginForm" class="space-y-5">
       <div>
         <label class="block text-sm font-medium text-slate-300 mb-1">Email</label>
         <input type="email" id="email" required
-          class="w-full bg-white/10 border border-white/20 text-white placeholder-slate-400 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          class="w-full bg-white/10 border border-white/20 text-white placeholder-slate-400 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="ruhul@example.com">
       </div>
       <div>
@@ -37,8 +35,7 @@
         </div>
       </div>
       <div id="errorMsg" class="hidden bg-red-500/20 border border-red-400/40 text-red-300 text-sm rounded-xl px-4 py-3"></div>
-      <button type="submit" id="loginBtn"
-        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition-all">
+      <button type="submit" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition-all">
         Sign In
       </button>
     </form>
@@ -47,19 +44,36 @@
     </p>
   </div>
 </div>
-
-<script src="../js/api.js"></script>
 <script>
-// If already logged in, go to dashboard
+const API_BASE = 'https://ruhul-amin-portfolio.onrender.com/api';
+const token = {
+  get: () => localStorage.getItem('ra_token'),
+  set: (t) => localStorage.setItem('ra_token', t),
+  remove: () => localStorage.removeItem('ra_token'),
+};
+async function apiGet(path, auth) {
+  const headers = {'Content-Type':'application/json'};
+  if (auth && token.get()) headers['Authorization'] = `Bearer ${token.get()}`;
+  const res = await fetch(API_BASE + path, {headers});
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Error');
+  return data;
+}
+async function apiPost(path, body) {
+  const res = await fetch(API_BASE + path, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Error');
+  return data;
+}
 if (token.get()) {
   apiGet('/auth/me', true).then(() => location.href = 'dashboard.html').catch(() => token.remove());
 }
-
 function togglePass() {
   const p = document.getElementById('password');
   p.type = p.type === 'password' ? 'text' : 'password';
 }
-
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = document.getElementById('loginBtn');
@@ -67,7 +81,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   err.classList.add('hidden');
   btn.textContent = 'Signing in...';
   btn.disabled = true;
-
   try {
     const data = await apiPost('/auth/login', {
       email: document.getElementById('email').value,
